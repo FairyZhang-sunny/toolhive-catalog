@@ -1,0 +1,30 @@
+{
+  "namespace": "io.github.stacklok",
+  "name": "expo-project-structure",
+  "title": "Expo Project Structure",
+  "description": "Folder structure for a new Expo app. Use when scaffolding or laying out a new Expo project with Expo Router, or deciding where a file should live in one. For new projects only — never restructure an existing app to match.",
+  "version": "0.1.0",
+  "status": "active",
+  "repository": {
+    "url": "https://github.com/expo/skills",
+    "type": "git"
+  },
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml"
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/stacklok/dockyard/skills/expo-project-structure:0.1.1"
+    },
+    {
+      "registryType": "git",
+      "url": "https://github.com/expo/skills",
+      "ref": "7ddc1f5796996e5c7efe2fc3fa9168eb24e8dac1",
+      "subfolder": "plugins/expo/skills/expo-project-structure"
+    }
+  ]
+}

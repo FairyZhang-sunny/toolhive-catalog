@@ -19,12 +19,12 @@
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/stacklok/dockyard/skills/fp-check:0.2.1"
+      "identifier": "ghcr.io/stacklok/dockyard/skills/fp-check:0.2.4"
     },
     {
       "registryType": "git",
       "url": "https://github.com/trailofbits/skills",
-      "ref": "7b9bd5f950f89a9ba71b249b9801c1a95be3928e",
+      "ref": "5c99c03fb8a9ea568432ecbcba5d86e9f4ac2bf0",
       "subfolder": "plugins/fp-check/skills/fp-check"
     }
   ]

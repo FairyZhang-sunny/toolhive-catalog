@@ -1,0 +1,112 @@
+name: Close unapproved new entries
+
+# New server/skill entries must reference an issue a maintainer has approved.
+# This runs on a schedule (not on pull_request / pull_request_target) so it can
+# comment on and close fork PRs without a privileged PR-triggered workflow.
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Log what would be closed without commenting or closing'
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: close-unapproved-entries
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: Sweep open PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pull-requests: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      APPROVED_LABEL: approved-for-pr
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || 'false' }}
+    steps:
+      - name: Close new-entry PRs without an approved issue
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Same-repository branches require write access and are exempt even
+          # when the token cannot see the author's organization membership.
+          # Maintainers and the repo's own automation remain exempt as well.
+          exempt_assoc='OWNER MEMBER COLLABORATOR'
+          exempt_bots='renovate[bot] toolhive-release-app[bot]'
+          new_entry_re='^registries/[^/]+/(servers|skills)/[^/]+/(server|skill)\.json$'
+
+          gh api --paginate "repos/${REPO}/pulls?state=open&per_page=100" \
+            --jq '.[] | [.number, .author_association, .user.login, (.head.repo.id != null and .head.repo.id == .base.repo.id)] | @tsv' |
+          while IFS=$'\t' read -r pr assoc login same_repo; do
+            if [[ "${same_repo}" == "true" || " ${exempt_assoc} " == *" ${assoc} "* || " ${exempt_bots} " == *" ${login} "* ]]; then
+              continue
+            fi
+
+            # Only gate PRs that add a new entry (including one moved or copied
+            # into a new path); fixes to existing entries stay open.
+            adds_entry=$(gh api --paginate "repos/${REPO}/pulls/${pr}/files?per_page=100" \
+              --jq '.[] | select(.status == "added" or .status == "renamed" or .status == "copied") | .filename' |
+              grep -Ec "${new_entry_re}" || true)
+            if [[ "${adds_entry}" -eq 0 ]]; then
+              continue
+            fi
+
+            # The PR must close an open issue in this repo that carries the
+            # maintainer-only label and was opened by, or is assigned to, the PR
+            # author. Linked issues can live in other repos, where anyone can
+            # apply the label, and the author check stops a PR from borrowing
+            # someone else's approval.
+            # shellcheck disable=SC2016  # GraphQL variables, not shell expansions
+            approved=$(gh api graphql -F owner="${REPO%/*}" -F name="${REPO#*/}" -F number="${pr}" \
+              -f query='
+                query($owner: String!, $name: String!, $number: Int!) {
+                  repository(owner: $owner, name: $name) {
+                    pullRequest(number: $number) {
+                      closingIssuesReferences(first: 10) {
+                        nodes {
+                          repository { nameWithOwner }
+                          state
+                          author { login }
+                          assignees(first: 20) { nodes { login } }
+                          labels(first: 50) { nodes { name } }
+                        }
+                      }
+                    }
+                  }
+                }' |
+              jq --arg repo "${REPO}" --arg label "${APPROVED_LABEL}" --arg login "${login}" \
+                '[.data.repository.pullRequest.closingIssuesReferences.nodes[]
+                     | select((.repository.nameWithOwner | ascii_downcase) == ($repo | ascii_downcase))
+                     | select(.state == "OPEN")
+                     | select(any(.labels.nodes[]; .name == $label))
+                     | select(.author.login == $login or any(.assignees.nodes[]; .login == $login))]
+                    | length')
+            if [[ "${approved}" -gt 0 ]]; then
+              continue
+            fi
+
+            echo "PR #${pr} by ${login} adds a new entry without an approved issue"
+            if [[ "${DRY_RUN}" == "true" ]]; then
+              continue
+            fi
+
+            gh pr close "${pr}" --repo "${REPO}" --comment "Thanks for the contribution. New servers and skills need an approved issue before we review a PR.
+
+          To add an entry:
+          1. Open an [Add an MCP server](https://github.com/${REPO}/issues/new?template=add-an-mcp-server.md) issue and check it against the [inclusion criteria](https://github.com/${REPO}/blob/main/CONTRIBUTING.md#adding-a-new-server-or-skill).
+          2. Wait for a maintainer to approve it (they apply the \`${APPROVED_LABEL}\` label). The issue must be opened by you or assigned to you.
+          3. Open a new PR with \`Closes #<issue>\` in the description.
+
+          Entries that don't meet these requirements are dropped without review. Fixes to existing entries don't need an issue. Closing this PR is automated and doesn't judge the server itself."
+          done

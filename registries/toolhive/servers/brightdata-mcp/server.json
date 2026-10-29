@@ -3,9 +3,9 @@
   "_meta": {
     "io.modelcontextprotocol.registry/publisher-provided": {
       "io.github.stacklok": {
-        "ghcr.io/stacklok/dockyard/npx/brightdata-mcp:2.11.1": {
+        "ghcr.io/stacklok/dockyard/npx/brightdata-mcp:4.1.0": {
           "metadata": {
-            "last_updated": "2026-08-07T00:30:48Z",
+            "last_updated": "2026-10-23T05:00:45Z",
             "stars": 2551
           },
           "overview": "## Bright Data MCP Server\n\nThe brightdata-mcp server is a Model Context Protocol (MCP) server that enables AI assistants and agents to access real-time web data through Bright Data's global proxy and scraping infrastructure. It allows AI workflows to fetch live web content, extract structured data, and perform large-scale web data collection without building or maintaining custom scraping systems. This makes it ideal for research, market analysis, competitive intelligence, and any AI-driven workflow that depends on fresh, publicly available web data.",
@@ -44,73 +44,287 @@
           "tool_definitions": [
             {
               "annotations": {
-                "openWorldHint": true,
+                "destructiveHint": false,
+                "openWorldHint": false,
                 "readOnlyHint": true,
-                "title": "Discover"
+                "title": "Ask Bright Data Assistant"
               },
-              "description": "Search the web and rank results by AI-driven relevance. Returns scored results with title, description, and URL. Supports intent-based ranking, geo-targeting, date filtering, and keyword filtering.",
+              "description": "Ask Bright Data's support assistant (Sophie) a question about Bright Data products, APIs, MCP usage, zones, scraping, or account setup. Use when the user asks \"how do I...\" about Bright Data, when you hit a Bright Data error you don't recognize, or when deciding between products (Web Unlocker vs. Scraping Browser vs. dataset tools). Supports threaded follow-ups via dialog_id.",
               "inputSchema": {
                 "properties": {
-                  "city": {
-                    "description": "City for localized results (e.g., \"New York\", \"Berlin\")",
+                  "dialog_id": {
+                    "description": "Optional 24-char dialog_id from a previous call to continue the same thread.",
+                    "maxLength": 24,
+                    "minLength": 24,
                     "type": "string"
                   },
-                  "country": {
-                    "description": "2-letter ISO country code for localized results (e.g., \"US\", \"GB\", \"DE\")",
-                    "maxLength": 2,
-                    "minLength": 2,
-                    "type": "string"
-                  },
-                  "end_date": {
-                    "description": "Only content updated until this date (YYYY-MM-DD)",
-                    "type": "string"
-                  },
-                  "filter_keywords": {
-                    "description": "Keywords that must appear in search results",
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "intent": {
-                    "description": "Describes the specific goal of the search to help the AI evaluate and rank result relevance.If not provided, the query string is used as the intent",
-                    "type": "string"
-                  },
-                  "language": {
-                    "description": "Language code (e.g., \"en\", \"es\", \"fr\")",
-                    "type": "string"
-                  },
-                  "num_results": {
-                    "description": "Exact number of search results to return",
-                    "type": "integer"
-                  },
-                  "query": {
-                    "description": "The search query",
-                    "type": "string"
-                  },
-                  "remove_duplicates": {
-                    "description": "Remove duplicate results (default: true)",
-                    "type": "boolean"
-                  },
-                  "start_date": {
-                    "description": "Only content updated from this date (YYYY-MM-DD)",
+                  "question": {
+                    "description": "The question to ask. Max 20480 chars.",
+                    "maxLength": 20480,
+                    "minLength": 1,
                     "type": "string"
                   }
                 },
                 "required": [
-                  "query"
+                  "question"
                 ],
                 "type": "object"
               },
-              "name": "discover"
+              "name": "ask_brightdata_assistant"
             },
             {
               "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false,
+                "title": "Chatgpt Ai Insights"
+              },
+              "description": "Send a prompt to ChatGPT and get back AI-generated insights.\nReturns structured answer text, citations, recommendations, and markdown. Useful for GEO and LLM as a judge.",
+              "inputSchema": {
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "type": "object"
+              },
+              "name": "chatgpt_ai_insights"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Extract Structured Data"
+              },
+              "description": "Scrape a webpage and extract structured data as JSON. First scrapes the page as markdown, then uses AI sampling to convert it to structured JSON format.",
+              "inputSchema": {
+                "properties": {
+                  "extraction_prompt": {
+                    "description": "Custom prompt to guide the extraction process. If not provided, will extract general structured data from the page.",
+                    "type": "string"
+                  },
+                  "url": {
+                    "format": "uri",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "type": "object"
+              },
+              "name": "extract"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "Get Scraper Details"
+              },
+              "description": "Show the scraper description, input fields, example input and main output fields for one method. Call before run_scraper and build the input from sample_input or input_fields. Records may contain more fields than output_fields lists.",
+              "inputSchema": {
+                "properties": {
+                  "dataset_id": {
+                    "description": "dataset_id from search_scrapers",
+                    "type": "string"
+                  },
+                  "method": {
+                    "description": "One of the scraper collection_methods, exactly as listed (some names are misspelled on purpose)",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dataset_id",
+                  "method"
+                ],
+                "type": "object"
+              },
+              "name": "get_scraper_details"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "Get Scraper Progress"
+              },
+              "description": "Status of a run: starting, running, ready, failed or canceled.",
+              "inputSchema": {
+                "properties": {
+                  "snapshot_id": {
+                    "description": "snapshot_id from run_scraper",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "snapshot_id"
+                ],
+                "type": "object"
+              },
+              "name": "get_scraper_progress"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "Get Scraper Results"
+              },
+              "description": "Records of a finished run. Returns status \"running\" if not ready yet.",
+              "inputSchema": {
+                "properties": {
+                  "snapshot_id": {
+                    "description": "snapshot_id from run_scraper",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "snapshot_id"
+                ],
+                "type": "object"
+              },
+              "name": "get_scraper_results"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "List Dataset Fields"
+              },
+              "description": "List the filterable fields of a searchable dataset (field name, type, and description). Call this before search_dataset to learn which field names and types you can filter on.\nSupported dataset_id values:\n- gd_l1viktl72bvl7bjuj0: LinkedIn people profiles\n- gd_me5ppxjr2ge6icjuh0: LinkedIn people profiles (contact-enriched)\n- gd_l1vikfnt1wgvvqz95w: LinkedIn company information",
+              "inputSchema": {
+                "properties": {
+                  "dataset_id": {
+                    "enum": [
+                      "gd_l1viktl72bvl7bjuj0",
+                      "gd_me5ppxjr2ge6icjuh0",
+                      "gd_l1vikfnt1wgvvqz95w"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dataset_id"
+                ],
+                "type": "object"
+              },
+              "name": "list_dataset_fields"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false,
+                "title": "Perplexity Ai Insights"
+              },
+              "description": "Send a prompt to Perplexity and get back AI-generated insights.\nReturns structured answer text in markdown format.\nUseful for GEO and LLM as a judge.",
+              "inputSchema": {
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "type": "object"
+              },
+              "name": "perplexity_ai_insights"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "Refresh Scrapers"
+              },
+              "description": "Reload the scraper list now instead of waiting for the daily refresh.",
+              "inputSchema": {
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "name": "refresh_scrapers"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false,
+                "title": "Run Scraper"
+              },
+              "description": "Run a scraper method. input is a list of objects shaped like sample_input from get_scraper_details, one per URL or query. collect_by_url returns one record per input; discover_by_* methods return up to limit_per_input records per input, and every record is billed. Waits up to 45 seconds; if still running it returns snapshot_id with status \"running\": then poll get_scraper_progress and call get_scraper_results when ready. Records with an \"error\" field explain failed inputs.",
+              "inputSchema": {
+                "properties": {
+                  "dataset_id": {
+                    "description": "dataset_id from search_scrapers",
+                    "type": "string"
+                  },
+                  "input": {
+                    "items": {
+                      "additionalProperties": {},
+                      "type": "object"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "limit_per_input": {
+                    "default": 10,
+                    "description": "discover_by_* only",
+                    "maximum": 1000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "method": {
+                    "description": "One of the scraper collection_methods, exactly as listed (some names are misspelled on purpose)",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dataset_id",
+                  "method",
+                  "input"
+                ],
+                "type": "object"
+              },
+              "name": "run_scraper"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Scrape as HTML"
+              },
+              "description": "Scrape a single webpage URL with advanced options for content extraction and get back the results in HTML.",
+              "inputSchema": {
+                "properties": {
+                  "url": {
+                    "format": "uri",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "type": "object"
+              },
+              "name": "scrape_as_html"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
                 "openWorldHint": true,
                 "readOnlyHint": true,
                 "title": "Scrape as Markdown"
               },
-              "description": "Scrape a single webpage URL with advanced options for content extraction and get back the results in MarkDown language. This tool can unlock any webpage even if it uses bot detection or CAPTCHA.",
+              "description": "Scrape a single webpage URL with advanced options for content extraction and get back the results in MarkDown language.",
               "inputSchema": {
                 "properties": {
                   "url": {
@@ -127,11 +341,12 @@
             },
             {
               "annotations": {
+                "destructiveHint": false,
                 "openWorldHint": true,
                 "readOnlyHint": true,
                 "title": "Scrape Batch"
               },
-              "description": "Scrape multiple webpages URLs with advanced options for content extraction and get back the results in MarkDown language. This tool can unlock any webpage even if it uses bot detection or CAPTCHA.",
+              "description": "Scrape multiple webpages URLs with advanced options for content extraction and get back the results in MarkDown language.",
               "inputSchema": {
                 "properties": {
                   "urls": {
@@ -154,6 +369,537 @@
             },
             {
               "annotations": {
+                "destructiveHint": true,
+                "openWorldHint": true,
+                "readOnlyHint": false,
+                "title": "Browser Click Element"
+              },
+              "description": "Click on an element using its ref from the ARIA snapshot.\nUse scraping_browser_snapshot first to get the correct ref values.\nThis is more reliable than CSS selectors.",
+              "inputSchema": {
+                "properties": {
+                  "element": {
+                    "description": "Description of the element being clicked for context",
+                    "type": "string"
+                  },
+                  "ref": {
+                    "description": "The ref attribute from the ARIA snapshot (e.g., \"23\")",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ref",
+                  "element"
+                ],
+                "type": "object"
+              },
+              "name": "scraping_browser_click_ref"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": false,
+                "title": "Browser Fill Form"
+              },
+              "description": "Fill multiple form fields in one operation.\nUse scraping_browser_snapshot first to get the correct ref values.\nThis is more efficient than filling fields one by one.",
+              "inputSchema": {
+                "properties": {
+                  "fields": {
+                    "description": "Fields to fill in",
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": {
+                          "description": "Human-readable field name",
+                          "type": "string"
+                        },
+                        "ref": {
+                          "description": "Exact target field reference from the page snapshot",
+                          "type": "string"
+                        },
+                        "type": {
+                          "description": "Type of the field",
+                          "enum": [
+                            "textbox",
+                            "checkbox",
+                            "radio",
+                            "combobox",
+                            "slider"
+                          ],
+                          "type": "string"
+                        },
+                        "value": {
+                          "description": "Value to fill in the field. For checkbox: use \"true\" or \"false\". For combobox: use the text of the option to select.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "type",
+                        "ref",
+                        "value"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "fields"
+                ],
+                "type": "object"
+              },
+              "name": "scraping_browser_fill_form"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Get HTML"
+              },
+              "description": "Get the HTML content of the current page. Avoid using this tool and if used, use full_page option unless it is important to see things like script tags since this can be large",
+              "inputSchema": {
+                "properties": {
+                  "full_page": {
+                    "description": "Whether to get the full page HTML including head and script tags\nAvoid this if you only need the extra HTML, since it can be quite large",
+                    "type": "boolean"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_get_html"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Get Text"
+              },
+              "description": "Get the text content of the current page",
+              "inputSchema": {
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_get_text"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Go Back"
+              },
+              "description": "Go back to the previous page",
+              "inputSchema": {
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_go_back"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Go Forward"
+              },
+              "description": "Go forward to the next page",
+              "inputSchema": {
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_go_forward"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Navigate"
+              },
+              "description": "Navigate a scraping browser session to a new URL",
+              "inputSchema": {
+                "properties": {
+                  "country": {
+                    "description": "Optional 2-letter ISO country code to route the browser session (e.g., \"US\", \"GB\")",
+                    "pattern": "^[A-Za-z]{2}$",
+                    "type": "string"
+                  },
+                  "url": {
+                    "description": "The URL to navigate to",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "url"
+                ],
+                "type": "object"
+              },
+              "name": "scraping_browser_navigate"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Network Requests"
+              },
+              "description": "Get all network requests made since loading the current page.\nShows HTTP method, URL, status code and status text for each request.\nUseful for debugging API calls, tracking data fetching, and understanding page behavior.",
+              "inputSchema": {
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_network_requests"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Screenshot"
+              },
+              "description": "Take a screenshot of the current page. Set full_page to capture the whole scrollable page.",
+              "inputSchema": {
+                "properties": {
+                  "full_page": {
+                    "description": "Whether to screenshot the full page (default: false)\nYou should avoid fullscreen if it's not important, since the images can be quite large",
+                    "type": "boolean"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_screenshot"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Scroll"
+              },
+              "description": "Scroll to the bottom of the current page",
+              "inputSchema": {
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_scroll"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Scroll to Element"
+              },
+              "description": "Scroll to a specific element using its ref from the ARIA snapshot.\nUse scraping_browser_snapshot first to get the correct ref values.\nThis is more reliable than CSS selectors.",
+              "inputSchema": {
+                "properties": {
+                  "element": {
+                    "description": "Description of the element to scroll to",
+                    "type": "string"
+                  },
+                  "ref": {
+                    "description": "The ref attribute from the ARIA snapshot (e.g., \"23\")",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ref",
+                  "element"
+                ],
+                "type": "object"
+              },
+              "name": "scraping_browser_scroll_to_ref"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Snapshot"
+              },
+              "description": "Capture an ARIA snapshot of the current page showing all interactive elements with their refs.\nThis provides accurate element references that can be used with ref-based tools.\nUse this before interacting with elements to get proper refs instead of guessing selectors.\nA filtered snapshot does not include page text; If necessary, call scraping_browser_get_text to read it.",
+              "inputSchema": {
+                "properties": {
+                  "filtered": {
+                    "description": "List only buttons, links and fields (default: false). Saves tokens. Use true for sensitive actions (payments, account changes) so page text cannot pose as an element.",
+                    "type": "boolean"
+                  }
+                },
+                "required": [],
+                "type": "object"
+              },
+              "name": "scraping_browser_snapshot"
+            },
+            {
+              "annotations": {
+                "destructiveHint": true,
+                "openWorldHint": true,
+                "readOnlyHint": false,
+                "title": "Browser Type Text"
+              },
+              "description": "Type text into an element using its ref from the ARIA snapshot.\nUse scraping_browser_snapshot first to get the correct ref values.\nThis is more reliable than CSS selectors.",
+              "inputSchema": {
+                "properties": {
+                  "element": {
+                    "description": "Description of the element being typed into for context",
+                    "type": "string"
+                  },
+                  "ref": {
+                    "description": "The ref attribute from the ARIA snapshot (e.g., \"23\")",
+                    "type": "string"
+                  },
+                  "submit": {
+                    "description": "Whether to submit the form after typing (press Enter)",
+                    "type": "boolean"
+                  },
+                  "text": {
+                    "description": "Text to type",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ref",
+                  "element",
+                  "text"
+                ],
+                "type": "object"
+              },
+              "name": "scraping_browser_type_ref"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": true,
+                "readOnlyHint": true,
+                "title": "Browser Wait for Element"
+              },
+              "description": "Wait for an element to be visible using its ref from the ARIA snapshot.\nUse scraping_browser_snapshot first to get the correct ref values.\nThis is more reliable than CSS selectors.",
+              "inputSchema": {
+                "properties": {
+                  "element": {
+                    "description": "Description of the element being waited for",
+                    "type": "string"
+                  },
+                  "ref": {
+                    "description": "The ref attribute from the ARIA snapshot (e.g., \"23\")",
+                    "type": "string"
+                  },
+                  "timeout": {
+                    "description": "Maximum time to wait in milliseconds (default: 30000)",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "ref",
+                  "element"
+                ],
+                "type": "object"
+              },
+              "name": "scraping_browser_wait_for_ref"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "Search Dataset"
+              },
+              "description": "Search a Bright Data dataset by a filter and get matching records back directly (fast Elasticsearch-backed search; no snapshot). Use this to FIND MANY records by criteria, as opposed to run_scraper which collects fresh records by URL.\nFirst call list_dataset_fields to get valid field names.\nA filter is a tree: a group {operator:\"and\"|\"or\", filters:[...]} or a leaf {name, value, operator}. Max nesting depth 3.\nLeaf operators: =, !=, \u003c, \u003c=, \u003e, \u003e=, in, not_in, includes, not_includes, array_includes, not_array_includes, is_null, is_not_null.\nSupported dataset_id values:\n- gd_l1viktl72bvl7bjuj0: LinkedIn people profiles\n- gd_me5ppxjr2ge6icjuh0: LinkedIn people profiles (contact-enriched)\n- gd_l1vikfnt1wgvvqz95w: LinkedIn company information",
+              "inputSchema": {
+                "properties": {
+                  "dataset_id": {
+                    "enum": [
+                      "gd_l1viktl72bvl7bjuj0",
+                      "gd_me5ppxjr2ge6icjuh0",
+                      "gd_l1vikfnt1wgvvqz95w"
+                    ],
+                    "type": "string"
+                  },
+                  "filter": {
+                    "anyOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "filters": {
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "filters": {
+                                      "items": {
+                                        "anyOf": [
+                                          {
+                                            "additionalProperties": false,
+                                            "properties": {
+                                              "filters": {
+                                                "items": {
+                                                  "additionalProperties": false,
+                                                  "properties": {
+                                                    "name": {
+                                                      "description": "Field name to filter on. Get valid field names from the list_dataset_fields tool.",
+                                                      "type": "string"
+                                                    },
+                                                    "operator": {
+                                                      "description": "Filter operator, one of: =, !=, \u003c, \u003c=, \u003e, \u003e=, in, not_in, includes, not_includes, array_includes, not_array_includes, is_null, is_not_null",
+                                                      "type": "string"
+                                                    },
+                                                    "value": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "number"
+                                                        },
+                                                        {
+                                                          "type": "boolean"
+                                                        },
+                                                        {
+                                                          "items": {
+                                                            "type": [
+                                                              "string",
+                                                              "number",
+                                                              "boolean"
+                                                            ]
+                                                          },
+                                                          "type": "array"
+                                                        }
+                                                      ],
+                                                      "description": "Value to compare against. Omit for is_null / is_not_null."
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "name",
+                                                    "operator"
+                                                  ],
+                                                  "type": "object"
+                                                },
+                                                "minItems": 1,
+                                                "type": "array"
+                                              },
+                                              "operator": {
+                                                "enum": [
+                                                  "and",
+                                                  "or"
+                                                ],
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "operator",
+                                              "filters"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          {
+                                            "$ref": "#/properties/filter/anyOf/0/properties/filters/items/anyOf/0/properties/filters/items/anyOf/0/properties/filters/items"
+                                          }
+                                        ]
+                                      },
+                                      "minItems": 1,
+                                      "type": "array"
+                                    },
+                                    "operator": {
+                                      "enum": [
+                                        "and",
+                                        "or"
+                                      ],
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "operator",
+                                    "filters"
+                                  ],
+                                  "type": "object"
+                                },
+                                {
+                                  "$ref": "#/properties/filter/anyOf/0/properties/filters/items/anyOf/0/properties/filters/items/anyOf/0/properties/filters/items"
+                                }
+                              ]
+                            },
+                            "minItems": 1,
+                            "type": "array"
+                          },
+                          "operator": {
+                            "enum": [
+                              "and",
+                              "or"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "operator",
+                          "filters"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "$ref": "#/properties/filter/anyOf/0/properties/filters/items/anyOf/0/properties/filters/items/anyOf/0/properties/filters/items"
+                      }
+                    ],
+                    "description": "Filter tree describing which records to match. Required, cannot be empty."
+                  },
+                  "search_after": {
+                    "description": "Pagination cursor from a previous response's search_after value.",
+                    "type": "array"
+                  },
+                  "size": {
+                    "default": 10,
+                    "description": "Number of records to return (max 10, default 10)",
+                    "exclusiveMinimum": 0,
+                    "maximum": 10,
+                    "type": "integer"
+                  },
+                  "sort": {
+                    "anyOf": [
+                      {
+                        "enum": [
+                          "default",
+                          "random"
+                        ],
+                        "type": "string"
+                      },
+                      {
+                        "items": {
+                          "additionalProperties": {
+                            "enum": [
+                              "asc",
+                              "desc"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    ],
+                    "description": "Sorting: \"default\", \"random\", or a custom array like [{\"timestamp\":\"asc\"}]. Use \"default\" or custom sort to paginate with search_after."
+                  }
+                },
+                "required": [
+                  "dataset_id",
+                  "filter"
+                ],
+                "type": "object"
+              },
+              "name": "search_dataset"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
                 "openWorldHint": true,
                 "readOnlyHint": true,
                 "title": "Search Engine"
@@ -193,6 +939,7 @@
             },
             {
               "annotations": {
+                "destructiveHint": false,
                 "openWorldHint": true,
                 "readOnlyHint": true,
                 "title": "Search Engine Batch"
@@ -242,14 +989,83 @@
                 "type": "object"
               },
               "name": "search_engine_batch"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "Search Scrapers"
+              },
+              "description": "Find a Bright Data pre-built scraper (Web Scraper API, 1,200+ sites) for a site or data type, e.g. \"amazon reviews\" or \"linkedin.com\". Returns dataset_id, name, domain and collection_methods. Next: call get_scraper_details with a dataset_id and one method.",
+              "inputSchema": {
+                "properties": {
+                  "limit": {
+                    "default": 10,
+                    "maximum": 50,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "query": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "query"
+                ],
+                "type": "object"
+              },
+              "name": "search_scrapers"
+            },
+            {
+              "annotations": {
+                "destructiveHint": false,
+                "openWorldHint": false,
+                "readOnlyHint": true,
+                "title": "Session Stats"
+              },
+              "description": "Tell the user about the tool usage during this session",
+              "inputSchema": {
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "name": "session_stats"
             }
           ],
           "tools": [
-            "discover",
+            "ask_brightdata_assistant",
+            "chatgpt_ai_insights",
+            "extract",
+            "get_scraper_details",
+            "get_scraper_progress",
+            "get_scraper_results",
+            "list_dataset_fields",
+            "perplexity_ai_insights",
+            "refresh_scrapers",
+            "run_scraper",
+            "scrape_as_html",
             "scrape_as_markdown",
             "scrape_batch",
+            "scraping_browser_click_ref",
+            "scraping_browser_fill_form",
+            "scraping_browser_get_html",
+            "scraping_browser_get_text",
+            "scraping_browser_go_back",
+            "scraping_browser_go_forward",
+            "scraping_browser_navigate",
+            "scraping_browser_network_requests",
+            "scraping_browser_screenshot",
+            "scraping_browser_scroll",
+            "scraping_browser_scroll_to_ref",
+            "scraping_browser_snapshot",
+            "scraping_browser_type_ref",
+            "scraping_browser_wait_for_ref",
+            "search_dataset",
             "search_engine",
-            "search_engine_batch"
+            "search_engine_batch",
+            "search_scrapers",
+            "session_stats"
           ]
         }
       }
@@ -300,7 +1116,7 @@
           "name": "POLLING_TIMEOUT"
         },
         {
-          "description": "Request timeout in seconds for base tools (search & scrape). No limit by default",
+          "description": "Request timeout in seconds for base tools (search \u0026 scrape). No limit by default",
           "name": "BASE_TIMEOUT"
         },
         {
@@ -317,7 +1133,7 @@
           "name": "TOOLS"
         }
       ],
-      "identifier": "ghcr.io/stacklok/dockyard/npx/brightdata-mcp:2.11.1",
+      "identifier": "ghcr.io/stacklok/dockyard/npx/brightdata-mcp:4.1.0",
       "registryType": "oci",
       "transport": {
         "type": "stdio"

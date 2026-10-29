@@ -1,0 +1,30 @@
+{
+  "namespace": "io.github.stacklok",
+  "name": "microsoft-kql",
+  "title": "Microsoft Kql",
+  "description": "KQL language expertise for writing correct, efficient Kusto Query Language queries, including syntax, joins, dynamic types, datetime, regex, serialization, memory, result sizes, and advanced functions.",
+  "version": "0.1.0",
+  "status": "active",
+  "repository": {
+    "url": "https://github.com/microsoft/skills",
+    "type": "git"
+  },
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml"
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/stacklok/dockyard/skills/microsoft-kql:0.1.1"
+    },
+    {
+      "registryType": "git",
+      "url": "https://github.com/microsoft/skills",
+      "ref": "8850874f66fb4d905bfcfcb923a18883bb70d1cd",
+      "subfolder": ".github/skills/kql"
+    }
+  ]
+}

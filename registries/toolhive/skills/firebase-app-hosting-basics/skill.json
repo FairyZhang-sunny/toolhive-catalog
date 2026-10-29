@@ -19,12 +19,12 @@
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/stacklok/dockyard/skills/firebase-app-hosting-basics:0.2.1"
+      "identifier": "ghcr.io/stacklok/dockyard/skills/firebase-app-hosting-basics:0.4.0"
     },
     {
       "registryType": "git",
       "url": "https://github.com/firebase/agent-skills",
-      "ref": "073edf7bb747c27b9c911a9126adaa5bc4648fdc",
+      "ref": "306cc1844c47839bd4f2c7dba7cc3c394e4f3e0b",
       "subfolder": "skills/firebase-app-hosting-basics"
     }
   ]
